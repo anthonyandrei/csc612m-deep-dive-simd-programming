@@ -52,7 +52,7 @@ Result run_benchmark(int runs, int mode)
                 matvec_simd_ymm(m, n, A, X, Y);
                 clock_t end = clock();
 
-                double duration_ms = (double)(end - start) / CLOCKS_PER_SEC;
+                double duration_ms = 1000.0 * (double)(end - start) / CLOCKS_PER_SEC;
                 // TODO: check answer function
             }
         }
