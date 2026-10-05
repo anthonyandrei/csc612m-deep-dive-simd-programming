@@ -85,7 +85,6 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(IntDir)matvec_scalar.obj;$(IntDir)matvec_simd_ymm.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
@@ -100,7 +99,6 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(IntDir)matvec_scalar.obj;$(IntDir)matvec_simd_ymm.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
@@ -113,7 +111,6 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(IntDir)matvec_scalar.obj;$(IntDir)matvec_simd_ymm.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
@@ -128,7 +125,6 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(IntDir)matvec_scalar.obj;$(IntDir)matvec_simd_ymm.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
@@ -137,11 +133,6 @@
     <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="matvec_scalar.asm">
-      <Command>"$(NASMExecutable)" -f $(NASMFormat) -o "$(IntDir)matvec_scalar.obj" "%(FullPath)"</Command>
-      <Message>Assembling matvec_scalar.asm with NASM</Message>
-      <Outputs>$(IntDir)matvec_scalar.obj</Outputs>
-    </CustomBuild>
     <CustomBuild Include="matvec_simd_ymm.asm">
       <Command>"$(NASMExecutable)" -f $(NASMFormat) -o "$(IntDir)matvec_simd_ymm.obj" "%(FullPath)"</Command>
       <Message>Assembling matvec_simd_ymm.asm with NASM</Message>

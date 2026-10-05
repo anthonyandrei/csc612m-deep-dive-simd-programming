@@ -20,9 +20,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="matvec_scalar.asm">
-      <Filter>Source Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="matvec_simd_ymm.asm">
       <Filter>Source Files</Filter>
     </CustomBuild>
