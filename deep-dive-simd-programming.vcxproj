@@ -53,9 +53,6 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
-  </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -70,7 +67,16 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="UserMacros">
+    <NASMExecutable Condition="'$(NASMExecutable)' == ''">nasm.exe</NASMExecutable>
+    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='Win32'">
+    <NASMFormat>win32</NASMFormat>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <NASMFormat>win64</NASMFormat>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -79,6 +85,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>$(IntDir)matvec_scalar.obj;$(IntDir)matvec_simd_ymm.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
@@ -93,6 +100,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>$(IntDir)matvec_scalar.obj;$(IntDir)matvec_simd_ymm.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
@@ -105,6 +113,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>$(IntDir)matvec_scalar.obj;$(IntDir)matvec_simd_ymm.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
@@ -119,6 +128,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>$(IntDir)matvec_scalar.obj;$(IntDir)matvec_simd_ymm.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
@@ -127,10 +137,16 @@
     <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="matvec_scalar.asm" />
+    <CustomBuild Include="matvec_scalar.asm">
+      <Command>"$(NASMExecutable)" -f $(NASMFormat) -o "$(IntDir)matvec_scalar.obj" "%(FullPath)"</Command>
+      <Message>Assembling matvec_scalar.asm with NASM</Message>
+      <Outputs>$(IntDir)matvec_scalar.obj</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="matvec_simd_ymm.asm">
+      <Command>"$(NASMExecutable)" -f $(NASMFormat) -o "$(IntDir)matvec_simd_ymm.obj" "%(FullPath)"</Command>
+      <Message>Assembling matvec_simd_ymm.asm with NASM</Message>
+      <Outputs>$(IntDir)matvec_simd_ymm.obj</Outputs>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
-  </ImportGroup>
 </Project>
