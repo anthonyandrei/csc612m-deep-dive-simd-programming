@@ -4,7 +4,12 @@
 #include <windows.h>
 
 #define RUNS 30
-#define PRINT_HEADER_COUNT 5
+#define PRINT_COUNT 5
+#define _C_ 0
+#define SCALAR 1
+#define XMM 2
+#define YMM 3
+
 
 // add the scalar declaration when its NASM version is ready
 extern void matvec_simd_ymm(int m, int n, float *A, float *X, float *Y);
@@ -40,13 +45,14 @@ void matvec_c(int m, int n, float *A, float *X, float *Y)
  */
 void printResults(float *result, int n)
 {
-    printf("First %d:", PRINT_HEADER_COUNT);
-    for (int i = 0; i < PRINT_HEADER_COUNT && i < n; i++)
+    printf("First %d:", PRINT_COUNT);
+    for (int i = 0; i < PRINT_COUNT && i < n; i++)
     {
         printf(" %f", result[i]);
     }
-    printf("\nLast %d:", PRINT_HEADER_COUNT);
-    int startIndex = max(0, n - PRINT_HEADER_COUNT); // start at 0 if there are fewer than 5 elements
+
+    printf("\nLast %d:", PRINT_COUNT);
+    int startIndex = max(0, n - PRINT_COUNT); // start at 0 if there are fewer than 5 elements
     for (int i = startIndex; i < n; i++)
     {
         printf(" %f", result[i]);
@@ -56,15 +62,15 @@ void printResults(float *result, int n)
 
 /**
  * @param result The kernel result to check.
- * @param cResult The C reference result.
+ * @param Y_c The C reference result.
  * @param n The number of elements in each result array.
  * @return 1 if the results match, 0 otherwise.
  */
-int verifyResults(float *result, float *cResult, int n)
+int verifyResults(float *result, float *Y_c, int n)
 {
     for (int i = 0; i < n; i++)
     {
-        if (result[i] != cResult[i])
+        if (result[i] != Y_c[i])
         {
             return 0;
         }
@@ -74,28 +80,103 @@ int verifyResults(float *result, float *cResult, int n)
 
 /**
  * @param n The side length of the matrix.
- * @return 1 if all kernels pass, 0 if allocation or verification fails.
+ * @param A The initialized matrix.
+ * @param X The initialized input vector.
+ * @param Y_scalar The scalar assembly output buffer.
+ * @param Y_xmm The XMM output buffer.
+ * @param Y_ymm The YMM output buffer.
+ * @param Y_c The C reference output buffer.
+ * @return 1 if all kernels pass, 0 if verification fails.
  * Runs each kernel 30 times and prints its average time and results.
  */
-static int run_benchmark(int n)
+static int run_benchmark(int n, float *A, float *X, float *Y_scalar, float *Y_xmm, float *Y_ymm, float *Y_c)
 {
-    int matrixCount = n * n;
+    char *names[] = {"C", "Scalar", "XMM", "YMM"};
+    float *results[] = {Y_c, Y_scalar, Y_xmm, Y_ymm};
+    int kernelCount = sizeof names / sizeof names[0];
+    LARGE_INTEGER start, end, freq;
+    QueryPerformanceFrequency(&freq); // get QPC's count/sec
+    int isAllCorrect = 1;
+
+    //per kernel
+    for (int kernel = 0; kernel < kernelCount; kernel++)
+    {
+        float *result = results[kernel];
+        double totalTimeInMs = 0.0;
+        int isKernelCorrect = 1;
+
+        // run each kernel RUNS times
+        for (int run = 0; run < RUNS; run++)
+        {
+            // clear result
+            for (int i = 0; i < n; i++)
+            {
+                result[i] = NAN;
+            }
+
+            QueryPerformanceCounter(&start);    //start count
+            switch (kernel) {
+                case _C_:
+                    matvec_c(n, n, A, X, result);
+                    break;
+                case YMM:
+                    matvec_simd_ymm(n, n, A, X, result);
+                    break;
+                default:
+                    break;
+            }
+            QueryPerformanceCounter(&end);  //end count
+
+            // counts -> secs -> ms
+            totalTimeInMs += 1000.0 * (end.QuadPart - start.QuadPart) / freq.QuadPart;
+
+            if (!verifyResults(result, Y_c, n))
+            {
+                isKernelCorrect = 0;
+            }
+        }
+        printf("\nResults of %s version:\n", names[kernel]);
+        printf("Average duration: %f ms\n", totalTimeInMs / RUNS);
+        printResults(result, n);
+
+        //verify results against C reference
+        if (kernel != 0)
+        {
+            printf("Results match C: %d\n", isKernelCorrect);
+        }
+        if (!isKernelCorrect)
+        {
+            isAllCorrect = 0;
+        }
+    }
+
+    return isAllCorrect;
+}
+
+int main(void)
+{
+    int n = 1 << 20;
+    long long matrixCount = (long long)n * n;
     float *A = malloc(matrixCount * sizeof *A);
     float *X = malloc(n * sizeof *X);
-    float *Y = malloc(n * sizeof *Y);
-    float *cResult = malloc(n * sizeof *cResult);
-    if (A == NULL || X == NULL || Y == NULL || cResult == NULL)
+    float *Y_scalar = malloc(n * sizeof *Y_scalar);
+    float *Y_xmm = malloc(n * sizeof *Y_xmm);
+    float *Y_ymm = malloc(n * sizeof *Y_ymm);
+    float *Y_c = malloc(n * sizeof *Y_c);
+    if (A == NULL || X == NULL || Y_scalar == NULL || Y_xmm == NULL || Y_ymm == NULL || Y_c == NULL)
     {
         fprintf(stderr, "Allocation failed for n=%d\n", n);
         free(A);
         free(X);
-        free(Y);
-        free(cResult);
-        return 0;
+        free(Y_scalar);
+        free(Y_xmm);
+        free(Y_ymm);
+        free(Y_c);
+        return 1;
     }
 
-    // repeat values from 1 to 10, as in the previous SIMD seatwork
-    for (int i = 0; i < matrixCount; i++)
+    // repeat values from 1 to 10
+    for (long long i = 0; i < matrixCount; i++)
     {
         A[i] = (float)(i % 10 + 1);
     }
@@ -104,81 +185,20 @@ static int run_benchmark(int n)
         X[i] = (float)(i % 10 + 1);
     }
     printf("\n--------------------------------\n");
-    printf("n=%d, matrix elements=%d, runs=%d\n", n, matrixCount, RUNS);
+    printf("n=%d, matrix elements=%d, runs=%lld\n", n, matrixCount, RUNS);
 	printf("--------------------------------\n");
     printf("Matrix A:\n");
     printResults(A, matrixCount);
     printf("Vector X:\n");
     printResults(X, n);
 
-    char *names[] = {"C", "YMM"};
-    int kernelCount = sizeof names / sizeof names[0];
-    LARGE_INTEGER start, end, freq;
-    QueryPerformanceFrequency(&freq); // get QPC's count/sec
-    int allCorrect = 1;
-
-    for (int kernel = 0; kernel < kernelCount; kernel++)
-    {
-        float *result = kernel == 0 ? cResult : Y;
-        double totalTimeInMs = 0.0;
-        int kernelCorrect = 1;
-        for (int run = 0; run < RUNS; run++)
-        {
-            // clear output outside timing so a missing store cannot reuse a result
-            for (int i = 0; i < n; i++)
-            {
-                result[i] = NAN;
-            }
-
-            QueryPerformanceCounter(&start);
-            if (kernel == 0)
-            {
-                matvec_c(n, n, A, X, result);
-            }
-            else
-            {
-                matvec_simd_ymm(n, n, A, X, result);
-            }
-            QueryPerformanceCounter(&end);
-            
-            // counts -> secs -> ms
-            totalTimeInMs += 1000.0 * (double)(end.QuadPart - start.QuadPart) / (double)freq.QuadPart;
-            
-            if (!verifyResults(result, cResult, n))
-            {
-                kernelCorrect = 0;
-            }
-        }
-        printf("\nResults of %s version:\n", names[kernel]);
-        printf("Average duration: %f ms\n", totalTimeInMs / RUNS);
-        printResults(result, n);
-        if (kernel != 0)
-        {
-            printf("Results match C: %d\n", kernelCorrect);
-        }
-        if (!kernelCorrect)
-        {
-            allCorrect = 0;
-        }
-    }
-
+    run_benchmark(n, A, X, Y_scalar, Y_xmm, Y_ymm, Y_c);
     free(A);
     free(X);
-    free(Y);
-    free(cResult);
-    return allCorrect;
-}
+    free(Y_scalar);
+    free(Y_xmm);
+    free(Y_ymm);
+    free(Y_c);
 
-int main(void)
-{
-    int dimensions[] = {1 << 10, 1 << 13, 1 << 15, 1003};
-    int count = sizeof dimensions / sizeof dimensions[0];
-    for (int i = 0; i < count; i++)
-    {
-        if (!run_benchmark(dimensions[i]))
-        {
-            return 1;
-        }
-    }
     return 0;
 }
