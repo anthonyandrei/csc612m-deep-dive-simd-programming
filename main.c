@@ -198,7 +198,7 @@ int main(void)
         X[i] = (float)(i % 10 + 1);
     }
     printf("\n--------------------------------\n");
-    printf("n=%d, matrix elements=%d, runs=%lld\n", n, matrixCount, RUNS);
+    printf("n=%d, matrix elements=%lld, runs=%d\n", n, matrixCount, RUNS);
 	printf("--------------------------------\n");
     printf("Matrix A:\n");
     printResults(A, matrixCount);
