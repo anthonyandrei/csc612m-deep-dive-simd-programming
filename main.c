@@ -12,6 +12,8 @@
 
 
 // add the scalar declaration when its NASM version is ready
+extern void matvec_scalar(int m, int n, float* A, float* X, float* Y);
+extern void matvec_simd_xmm(int m, int n, float* A, float* X, float* Y);
 extern void matvec_simd_ymm(int m, int n, float *A, float *X, float *Y);
 
 /**
@@ -43,7 +45,7 @@ void matvec_c(int m, int n, float *A, float *X, float *Y)
  * @param n The number of elements in the array.
  * Prints the first and last five elements of the array.
  */
-void printResults(float *result, int n)
+void printResults(float* result, long long n)
 {
     printf("First %d:", PRINT_COUNT);
     for (int i = 0; i < PRINT_COUNT && i < n; i++)
@@ -115,13 +117,24 @@ static int run_benchmark(int n, float *A, float *X, float *Y_scalar, float *Y_xm
             }
 
             QueryPerformanceCounter(&start);    //start count
-            switch (kernel) {
+            switch (kernel)
+            {
                 case _C_:
                     matvec_c(n, n, A, X, result);
                     break;
+
+                case SCALAR:
+                    matvec_scalar(n, n, A, X, result);
+                    break;
+
+                case XMM:
+                    matvec_simd_xmm(n, n, A, X, result);
+                    break;
+
                 case YMM:
                     matvec_simd_ymm(n, n, A, X, result);
                     break;
+
                 default:
                     break;
             }
@@ -155,7 +168,7 @@ static int run_benchmark(int n, float *A, float *X, float *Y_scalar, float *Y_xm
 
 int main(void)
 {
-    int n = 1 << 20;
+    int n = 1024;
     long long matrixCount = (long long)n * n;
     float *A = malloc(matrixCount * sizeof *A);
     float *X = malloc(n * sizeof *X);
