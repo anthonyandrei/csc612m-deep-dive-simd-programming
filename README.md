@@ -1,5 +1,6 @@
 # Deep Dive SIMD Programming Project
 Group #5
+
 Members:
 - Julian Johan Briones
 - Ramon John Dela Cruz
