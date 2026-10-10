@@ -168,7 +168,7 @@ static int run_benchmark(int n, float *A, float *X, float *Y_scalar, float *Y_xm
 
 int main(void)
 {
-    int n = 1024;
+    int n = (1 << 13) + 3;
     long long matrixCount = (long long)n * n;
     float *A = malloc(matrixCount * sizeof *A);
     float *X = malloc(n * sizeof *X);
