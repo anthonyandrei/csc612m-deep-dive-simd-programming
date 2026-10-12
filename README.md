@@ -6,17 +6,14 @@ Members:
 - Ramon John Dela Cruz
 - Anthony Andrei Tan
 
-## Screenshot of program output with execution time and correctness check (n = 2^10; 2^20 total elements)
-![Screenshot of program output with execution time and correctness check (n = 2^10; 2^20 total elements)](images/2_20.png)
+## Program output screenshots
 
-## Screenshot of program output with execution time and correctness check (n = 2^13; 2^26 total elements)
-![Screenshot of program output with execution time and correctness check (n = 2^13; 2^26 total elements)](images/2_26.png)
-
-## Screenshot of program output with execution time and correctness check (n = 2^15; 2^30 total elements)
-![Screenshot of program output with execution time and correctness check (n = 2^15; 2^30 total elements)](images/2_30.png)
-
-## Screenshot of program output with execution time and correctness check (n = 2^13 + 3; boundary check: n % 4 = 3, n % 8 = 3)
-![Screenshot of program output with execution time and correctness check (n = 2^13 + 3; boundary check: n % 4 = 3, n % 8 = 3)](images/2_26+3.png)
+| Matrix size | Release | Debug |
+| --- | --- | --- |
+| n = 1,024 (2^10)<br>1,048,576 matrix elements (2^20) | <img src="images/2_20.png" alt="Release output for n = 1,024" width="500"> | <img src="images/2_20_debug.png" alt="Debug output for n = 1,024" width="500"> |
+| n = 8,192 (2^13)<br>67,108,864 matrix elements (2^26) | <img src="images/2_26.png" alt="Release output for n = 8,192" width="500"> | <img src="images/2_26_debug.png" alt="Debug output for n = 8,192" width="500"> |
+| n = 32,768 (2^15)<br>1,073,741,824 matrix elements (2^30) | <img src="images/2_30.png" alt="Release output for n = 32,768" width="500"> | <img src="images/2_30_debug.png" alt="Debug output for n = 32,768" width="500"> |
+| n = 8,195 (2^13 + 3)<br>67,158,025 matrix elements; boundary checks: n % 4 = 3, n % 8 = 3 | <img src="images/2_26+3.png" alt="Release output for n = 8,195 boundary case" width="500"> | <img src="images/2_26+3_debug.png" alt="Debug output for n = 8,195 boundary case" width="500"> |
 
 ## viii. Analysis of Results Across Platforms
 At n = 1,024, YMM finishes only 0.551 ms ahead of scalar execution. Increasing matrix size to n = 8,192 widens this margin to 32.082 ms as scalar processing time climbs to 43.239 ms. At the maximum dimension of n = 32,768, the absolute time saved expands dramatically: YMM finishes 504.047 ms faster than scalar execution and outpaces the 128-bit XMM kernel by an additional 19.122 ms. Because total arithmetic operations scale quadratically, the real-world efficiency of 256-bit SIMD registers compounds as dimensions increase, eliminating over half a second per execution on large matrices. This means that the size is directly proportional to the result in differences as the comparison just keeps increasing from there.
