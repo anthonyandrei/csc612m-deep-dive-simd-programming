@@ -19,22 +19,22 @@ Members:
 
 | Matrix Size (n) | Kernel        | Avg. Time (ms) | Speedup vs. C | Speedup vs. Scalar |
 | :-------------: | :------------ | :------------: | :-----------: | :----------------: |
-|    **1,024**    | C             |     3.027      |      ---      |       0.23×        |
-|                 | Scalar (NASM) |     0.687      |     4.41×     |        ---         |
-|                 | XMM (128-bit) |     0.207      |    14.62×     |       3.32×        |
-|                 | YMM (256-bit) |     0.127      |    23.83×     |       5.41×        |
-|    **8,192**    | C             |    177.995     |      ---      |       0.25×        |
-|                 | Scalar (NASM) |     43.741     |     4.07×     |        ---         |
-|                 | XMM (128-bit) |     12.728     |    13.98×     |       3.44×        |
-|                 | YMM (256-bit) |     11.989     |    14.85×     |       3.65×        |
-|    **8,195**    | C             |    176.999     |      ---      |       0.25×        |
-|                 | Scalar (NASM) |     43.922     |     4.03×     |        ---         |
-|                 | XMM (128-bit) |     13.148     |    13.46×     |       3.34×        |
-|                 | YMM (256-bit) |     12.617     |    14.03×     |       3.48×        |
-|   **32,768**    | C             |    2875.474    |      ---      |       0.25×        |
-|                 | Scalar (NASM) |    710.488     |     4.05×     |        ---         |
-|                 | XMM (128-bit) |    213.322     |    13.48×     |       3.33×        |
-|                 | YMM (256-bit) |    202.014     |    14.23×     |       3.52×        |
+|    **1,024**    | C             |     0.662      |      ---      |       0.99×        |
+|                 | Scalar (NASM) |     0.657      |     1.01×     |        ---         |
+|                 | XMM (128-bit) |     0.163      |     4.06×     |       4.03×        |
+|                 | YMM (256-bit) |     0.106      |     6.25×     |       6.20×        |
+|    **8,192**    | C             |     43.728     |      ---      |       1.00×        |
+|                 | Scalar (NASM) |     43.239     |     1.01×     |        ---         |
+|                 | XMM (128-bit) |     11.967     |     3.65×     |       3.61×        |
+|                 | YMM (256-bit) |     11.157     |     3.92×     |       3.88×        |
+|    **8,195**    | C             |     43.505     |      ---      |       1.00×        |
+|                 | Scalar (NASM) |     43.356     |     1.00×     |        ---         |
+|                 | XMM (128-bit) |     12.141     |     3.58×     |       3.57×        |
+|                 | YMM (256-bit) |     11.420     |     3.81×     |       3.80×        |
+|   **32,768**    | C             |    733.695     |      ---      |       1.06×        |
+|                 | Scalar (NASM) |    690.588     |     1.06×     |        ---         |
+|                 | XMM (128-bit) |    205.663     |     3.57×     |       3.36×        |
+|                 | YMM (256-bit) |    186.541     |     3.93×     |       3.70×        |
 
 ## viii. Analysis of Results Across Platforms
 At n = 1,024, YMM finishes only 0.551 ms ahead of scalar execution. Increasing matrix size to n = 8,192 widens this margin to 32.082 ms as scalar processing time climbs to 43.239 ms. At the maximum dimension of n = 32,768, the absolute time saved expands dramatically: YMM finishes 504.047 ms faster than scalar execution and outpaces the 128-bit XMM kernel by an additional 19.122 ms. Because total arithmetic operations scale quadratically, the real-world efficiency of 256-bit SIMD registers compounds as dimensions increase, eliminating over half a second per execution on large matrices. This means that the size is directly proportional to the result in differences as the comparison just keeps increasing from there.
