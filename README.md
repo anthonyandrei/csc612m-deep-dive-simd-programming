@@ -15,6 +15,23 @@ Members:
 | n = 32,768 (2^15)<br>1,073,741,824 matrix elements (2^30) | <img src="images/2_30.png" alt="Release output for n = 32,768" width="500"> | <img src="images/2_30_debug.png" alt="Debug output for n = 32,768" width="500"> |
 | n = 8,195 (2^13 + 3)<br>67,158,025 matrix elements; boundary checks: n % 4 = 3, n % 8 = 3 | <img src="images/2_26+3.png" alt="Release output for n = 8,195 boundary case" width="500"> | <img src="images/2_26+3_debug.png" alt="Debug output for n = 8,195 boundary case" width="500"> |
 
+## ii. Comparative Table of Execution Times
+
+| Matrix Size (n) | Kernel        | Avg. Time (ms) | Speedup vs. C | Speedup vs. Scalar |
+| :-------------: | :------------ | :------------: | :-----------: | :----------------: |
+|    **1,024**    | C             |     3.027      |      ---      |       0.23×        |
+|                 | Scalar (NASM) |     0.687      |     4.41×     |        ---         |
+|                 | XMM (128-bit) |     0.207      |    14.62×     |       3.32×        |
+|                 | YMM (256-bit) |     0.127      |    23.83×     |       5.41×        |
+|    **8,192**    | C             |    177.995     |      ---      |       0.25×        |
+|                 | Scalar (NASM) |     43.741     |     4.07×     |        ---         |
+|                 | XMM (128-bit) |     12.728     |    13.98×     |       3.44×        |
+|                 | YMM (256-bit) |     11.989     |    14.85×     |       3.65×        |
+|   **32,768**    | C             |    2875.474    |      ---      |       0.25×        |
+|                 | Scalar (NASM) |    710.488     |     4.05×     |        ---         |
+|                 | XMM (128-bit) |    213.322     |    13.48×     |       3.33×        |
+|                 | YMM (256-bit) |    202.014     |    14.23×     |       3.52×        |
+
 ## viii. Analysis of Results Across Platforms
 At n = 1,024, YMM finishes only 0.551 ms ahead of scalar execution. Increasing matrix size to n = 8,192 widens this margin to 32.082 ms as scalar processing time climbs to 43.239 ms. At the maximum dimension of n = 32,768, the absolute time saved expands dramatically: YMM finishes 504.047 ms faster than scalar execution and outpaces the 128-bit XMM kernel by an additional 19.122 ms. Because total arithmetic operations scale quadratically, the real-world efficiency of 256-bit SIMD registers compounds as dimensions increase, eliminating over half a second per execution on large matrices. This means that the size is directly proportional to the result in differences as the comparison just keeps increasing from there.
 
