@@ -32,8 +32,8 @@ matvec_simd_ymm:
 
     ;8 floats per YMM
     mov r11, rdx
-    shr r11, 3    ;n / 8 to remove the remainder
-    shl r11, 3    ;perfect batches of 8 cols
+    shr r11, 3    ;n // 8 to remove the remainder
+    shl r11, 3    ;perfect multiple of 8 cols
 
 .row_loop:
     vxorps ymm4, ymm4, ymm4    ;init accumulator for this row
@@ -57,13 +57,13 @@ matvec_simd_ymm:
     ;combine halves first because horizontal adds stay within each 128 bit half
     vextractf128 xmm3, ymm4, 1
     vaddps xmm4, xmm4, xmm3
-    ;now do another horizontal add
     vhaddps xmm4, xmm4, xmm4
+    ;now do another horizontal add
     vhaddps xmm4, xmm4, xmm4    ;low lane now holds the sum of all 8 lanes
 
 .rem_loop:
     ;remaining cols
-    
+
     ;check if all rem cols processed
     cmp rax, rdx
     jge .assign
@@ -82,7 +82,7 @@ matvec_simd_ymm:
 
     add r10, 4  ; move to next float in Y
     lea r8, [r8+rdx*4]    ;point to next row of A
-    
+
     dec rcx               ;one less row remaining
     jnz .row_loop
 
